@@ -13,6 +13,10 @@
   <a href="https://hakashikatake.github.io/no-spoil-6/support/">Support</a>
 </p>
 
+
+https://github.com/user-attachments/assets/f427ff7f-d279-47a9-bb77-e5e232eaf13b
+
+
 > [!NOTE]
 > **Chrome Web Store listing coming soon.** The browser builds are available now through the [manual installation steps](#install).
 
