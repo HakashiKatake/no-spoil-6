@@ -2,18 +2,19 @@
   const settingsApi = globalThis.NoSpoilSettings;
   const protection = globalThis.NoSpoilProtection;
   const { matches, createMatcher, adapterFor } = globalThis.NoSpoilRules;
-  const { id: platform, selector: primary } = adapterFor(location.hostname);
+  const { id: platform, selector: primary, resolveCard, extraCandidates, independent } = adapterFor(location.hostname);
   const onYouTube = /(?:^|\.)(?:youtube\.com|youtube-nocookie\.com|youtu\.be)$/.test(location.hostname);
   const fallback = "a[href],p,h1,h2,h3,h4,h5,h6,[role=heading],figure";
-  const candidates = primary + "," + fallback;
+  const candidates = [primary, fallback, extraCandidates].filter(Boolean).join(",");
   const separate = 'shreddit-post,shreddit-comment,.thing[data-fullname],[data-comment-id]'
-    + (platform === "linkedin" ? ",.comments-comment-item,.comment" : "");
+    + (independent ? "," + independent : "");
   const excluded = 'script,style,noscript,template,textarea,select,input,[contenteditable]:not([contenteditable=false]),[data-no-spoil-control]';
   const transient = '[role="tooltip"],tp-yt-paper-tooltip,yt-tooltip-view-model';
   const controls = 'button,[role="button"],[role="toolbar"],[role="menu"],[role="menuitem"],yt-button-shape,reel-action-bar-view-model';
   const identityAttributes = ["video-id", "post-id", "data-post-id", "data-comment-id", "data-fullname", "thingid", "data-urn"];
   const evidenceAttributes = ["alt", "title", "aria-label", "post-title", "subreddit-name", "subreddit-prefixed-name", "data-title"];
   const watchedAttributes = [...evidenceAttributes, ...identityAttributes, "href", "hidden"];
+  if (platform === "linkedin") watchedAttributes.push("src", "data-view-name", "data-id", "data-activity-urn", "componentkey");
   const mediaSelector = "video,audio";
   const shortsReel = "ytd-reel-video-renderer,ytm-reel-video-renderer";
   const layoutStyles = new CSSStyleSheet();
@@ -114,8 +115,15 @@
     return null;
   }
 
-  function candidateFor(element) {
+  function candidateFor(element, cardCache) {
     const post = closestAcrossRoots(element, primary);
+    if (resolveCard) {
+      const key = post ?? element;
+      if (cardCache?.has(key)) return cardCache.get(key);
+      const card = resolveCard(element, post);
+      if (card) cardCache?.set(key, card);
+      if (card) return card;
+    }
     if (post) return post;
 
     const nearest = element.closest(fallback);
@@ -170,6 +178,15 @@
       if (value) {
         identity = (attr === "video-id" ? "video" : attr) + ":" + value;
         break;
+      }
+    }
+    if (!identity && platform === "linkedin") {
+      for (const attr of ["data-activity-urn", "data-id", "componentkey"]) {
+        const postUrn = target.getAttribute(attr)?.match(/urn:li:(?:activity|ugcPost):\d+/)?.[0];
+        if (postUrn) {
+          identity = postUrn;
+          break;
+        }
       }
     }
     const pending = [{ node: target, control: false }];
@@ -491,9 +508,18 @@
   function scan(found) {
     const watchTargets = scanWatchPage();
     const topic = inGtaFeed();
-    for (const candidate of found) scanCandidate(candidate, topic, watchTargets);
+    const targets = resolveCard ? new Set() : found;
+    if (resolveCard) {
+      const cardCache = new Map();
+      for (const node of found) {
+        const target = candidateFor(node, cardCache);
+        if (target) targets.add(target);
+        if (target !== node) removeShield(node);
+      }
+    }
+    for (const candidate of targets) scanCandidate(candidate, topic, watchTargets);
     for (const [target] of shields) {
-      if (!target.isConnected) removeShield(target);
+      if (!target.isConnected || (resolveCard && ancestorShield(target, !target.matches(separate)))) removeShield(target);
     }
   }
 
@@ -608,6 +634,13 @@
   document.addEventListener("DOMContentLoaded", () => {
     refresh(true);
   }, { once: true });
+  if (resolveCard) {
+    document.addEventListener("load", (event) => {
+      if (!active || !event.target.matches?.(extraCandidates)) return;
+      const card = candidateFor(event.target);
+      if (card) scan(new Set([card]));
+    }, true);
+  }
   window.addEventListener("focus", refresh);
   window.addEventListener("pageshow", refresh);
   window.addEventListener("popstate", checkRoute);

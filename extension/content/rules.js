@@ -55,6 +55,68 @@
 
   const article = 'article,[role="article"]';
   const generic = article + ',[data-post-id],[data-comment-id],[data-testid="post"],[data-testid="comment"],.post,.comment';
+  const linkedInPost = [
+    '.feed-shared-update-v2', '.occludable-update', '.main-feed-activity-card',
+    '[data-view-name="feed-full-update"]', '[data-testid="main-feed-activity-card"]',
+    '[data-urn^="urn:li:activity:"]', '[data-urn^="urn:li:ugcPost:"]',
+    '[data-id^="urn:li:activity:"]', '[data-activity-urn^="urn:li:activity:"]',
+    '[componentkey*="urn:li:activity:"]', '[componentkey*="urn:li:ugcPost:"]',
+    '[role="feed"] [role="listitem"]:not([role="listitem"] [role="listitem"])', article
+  ].join(",");
+  const linkedInText = '[data-view-name*="commentary"],[data-test-id="main-feed-activity-card__commentary"],.update-components-text';
+  const linkedInComment = '.comments-comment-item,.comment,[data-view-name="comment-entity"],[data-comment-id]';
+  const linkedInActions = '.feed-shared-social-action-bar,.main-feed-activity-card__social-actions,[data-view-name="feed-action-bar"],[data-view-name="feed-social-actions"]';
+  const linkedInReaction = '[data-view-name="feed-like-button"],[data-view-name="feed-reaction-button"],:is(button,[role="button"]):is([aria-label^="Like" i],[aria-label^="React" i])';
+  const linkedInReply = '[data-view-name="feed-comment-button"],:is(button,[role="button"])[aria-label^="Comment" i]';
+  const linkedInMedia = 'img,video,iframe,canvas,[data-view-name^="feed-image"],[data-view-name^="feed-video"],[data-view-name^="feed-document"]';
+  const linkedInBoundary = 'main,[role="main"],[role="feed"],[role="list"],ul,ol,body,html,aside,nav,form';
+  const linkedInItemBoundary = '.occludable-update,.main-feed-activity-card,[role="listitem"],[data-activity-urn]';
+
+  function actionCount(card, selector) {
+    return [...card.querySelectorAll(selector)].filter((control) => !control.closest(linkedInComment)).length;
+  }
+
+  function hasPostActions(card) {
+    const bars = actionCount(card, linkedInActions);
+    return bars > 0
+      ? bars === 1
+      : actionCount(card, linkedInReaction) === 1 && actionCount(card, linkedInReply) === 1;
+  }
+
+  function hasAttachment(card) {
+    for (const media of card.querySelectorAll(linkedInMedia)) {
+      if (media.closest(linkedInComment)) continue;
+      if (media.matches('[data-view-name^="feed-image"],[data-view-name^="feed-video"],[data-view-name^="feed-document"]')) return true;
+      if (media.getAttribute("src")?.includes("feedshare-")) return true;
+      const bounds = media.getBoundingClientRect();
+      if (bounds.width >= 120 && bounds.height >= 70) return true;
+    }
+    return false;
+  }
+
+  function isIndependentLinkedInPost(element) {
+    if (element.matches(linkedInComment)) return false;
+    if (element.matches(linkedInItemBoundary)) return true;
+    return hasPostActions(element) && (element.matches(linkedInPost) || element.querySelector(linkedInText + ",p"));
+  }
+
+  function resolveLinkedInCard(element, post) {
+    if (post?.matches(linkedInComment)) return post;
+    const commentary = element.closest(linkedInText);
+    const startingPoint = post ?? commentary ?? element;
+
+    for (let card = startingPoint, branch, depth = 0;
+      card && depth < 8 && !card.matches(linkedInBoundary);
+      branch = card, card = card.parentElement, depth++) {
+      // A sibling with its own actions has its own post boundary.
+      if (branch && [...card.children].some((child) => child !== branch && isIndependentLinkedInPost(child))) break;
+      const isCard = card.matches(linkedInPost) || hasPostActions(card);
+      if (isCard && hasAttachment(card)) return card;
+    }
+
+    return post ?? commentary;
+  }
+
   const adapters = [
     { id: "x", domains: ["x.com", "twitter.com"], selector: '[data-testid="tweet"],[data-testid="trend"]' },
     { id: "youtube", domains: ["youtube.com", "youtu.be", "youtube-nocookie.com"], selector: [
@@ -75,12 +137,8 @@
       '[data-testid^="feedItem-by-"]', '[data-testid^="postThreadItem-by-"]', '[data-testid="postThreadItem"]',
       'a[href*="/profile/"][href*="/post/"]:has([data-testid="postText"])', article
     ].join(",") },
-    { id: "linkedin", domains: ["linkedin.com"], selector: [
-      '.feed-shared-update-v2', '.occludable-update', '.main-feed-activity-card',
-      '[data-view-name="feed-full-update"]', '[data-testid="main-feed-activity-card"]',
-      '[data-urn^="urn:li:activity:"]', '[data-urn^="urn:li:ugcPost:"]',
-      '[role="feed"] > [role="listitem"]', '.comments-comment-item', '.comment', article
-    ].join(",") },
+    { id: "linkedin", domains: ["linkedin.com"], selector: [linkedInPost, linkedInComment, linkedInText].join(","),
+      resolveCard: resolveLinkedInCard, extraCandidates: linkedInMedia, independent: linkedInComment },
     { id: "threads", domains: ["threads.com", "threads.net"], selector: '[data-pressable-container],' + article }
   ];
 
