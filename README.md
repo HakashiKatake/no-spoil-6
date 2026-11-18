@@ -30,7 +30,9 @@ The shield checks post text, accessible image descriptions, titles and links. It
 
 ## Website
 
-Run `python3 -m http.server 8000 --directory website` from the project root, then open `http://localhost:8000`. The `website/` folder is ready for a static host. After hosting it, use the site's `/privacy/` and `/support/` URLs in the store forms. The build script refreshes the ZIPs in `website/downloads/` whenever you rebuild the extension.
+GitHub Actions rebuilds the browser downloads and publishes the `website/` folder to [GitHub Pages](https://hakashikatake.github.io/no-spoil-6/) when site or extension files change on `main`. Use the live [privacy policy](https://hakashikatake.github.io/no-spoil-6/privacy/) and [support page](https://hakashikatake.github.io/no-spoil-6/support/) in the store forms.
+
+For a local preview, run `python3 -m http.server 8000 --directory website` from the project root and open `http://localhost:8000`.
 
 <details>
 <summary>Hero artwork</summary>
