@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>No Spoil 6</title>
+  <link rel="stylesheet" href="popup.css">
+  <script src="../shared/settings.js" defer></script>
+  <script src="popup.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="brand">
+      <img src="../icons/shield-128.png" width="35" height="35" alt="">
+      <h1>No Spoil <span>6</span></h1>
+      <a class="settings-link" href="../options/options.html" target="_blank">Settings ↗</a>
+    </header>
+
+    <section class="status-card" id="status-card" aria-live="polite">
+      <div class="status-content">
+        <div class="status-label"><span class="status-dot"></span><span id="status-label">Checking shield</span></div>
+        <h2 id="status-heading">GTA 6 spoiler shield</h2>
+        <p id="status-description">Checking your protection settings.</p>
+        <a class="activity-link" href="../options/options.html#activity" target="_blank" id="activity-link" hidden></a>
+      </div>
+    </section>
+
+    <form id="shield-form">
+      <fieldset id="settings-fields" disabled>
+        <legend>Protection mode</legend>
+        <div class="modes">
+          <label><input type="radio" name="mode" value="always"><span>Always on</span></label>
+          <label><input type="radio" name="mode" value="scheduled"><span>Schedule</span></label>
+          <label><input type="radio" name="mode" value="paused"><span>Paused</span></label>
+        </div>
+        <label class="filter-choice" for="scope">
+          <span>Filter</span>
+          <select id="scope" name="scope">
+            <option value="everything">Everything about GTA 6</option>
+            <option value="story">Story and leaks</option>
+            <option value="custom">Custom phrases only</option>
+          </select>
+        </label>
+
+        <section class="schedule" id="schedule" hidden aria-label="Schedule settings">
+          <div class="schedule-heading">
+            <h2>Set your hours</h2>
+            <p id="local-time">Uses your device’s local time.</p>
+          </div>
+          <label class="start-label" for="start-at">Start date and time <span>Optional</span></label>
+          <input type="datetime-local" id="start-at" name="start-at">
+          <p class="help">Leave blank to start using your hours today.</p>
+
+          <div class="windows-heading"><h3>Daily browsing hours</h3><button type="button" class="text-button" id="add-window">+ Add hours</button></div>
+          <div id="windows"></div>
+          <p class="help">With no hours set, the shield runs all day after your start date.</p>
+          <button type="submit" class="save-button">Save schedule</button>
+        </section>
+      </fieldset>
+      <p id="form-message" class="form-message" role="status" hidden></p>
+    </form>
+
+    <div class="reveal-tip">
+      <span class="eye" aria-hidden="true"></span>
+      <p id="reveal-tip">Use the eye on a blurred post to reveal it.</p>
+      <button type="button" class="text-button" id="cover-tab" hidden>Cover reveals</button>
+    </div>
+
+    <footer><span class="lock" aria-hidden="true"></span> Page content stays on this device.</footer>
+  </main>
+  <template id="window-template">
+    <div class="time-window">
+      <label>From<input type="time" data-start required></label>
+      <label>Until<input type="time" data-end required></label>
+      <button class="remove-button" type="button" aria-label="Remove browsing hours">×</button>
+    </div>
+  </template>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f0d14">
+  <meta name="description" content="No Spoil 6 blurs GTA 6 spoilers across your browser. Set local browsing hours and reveal individual posts when you’re ready.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="No Spoil 6 — Keep GTA 6 a surprise">
+  <meta property="og:description" content="A browser extension that blurs GTA 6 posts, videos, and comments until you choose to see them.">
+  <title>No Spoil 6 — Keep GTA 6 a surprise</title>
+  <link rel="icon" href="assets/shield.png" type="image/png">
+  <link rel="preload" href="assets/after-dark.webp" as="image">
+  <link rel="stylesheet" href="styles.css">
+  <script src="demo.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="opening" id="top">
+    <header class="site-header wrap">
+      <a class="brand" href="#top" aria-label="No Spoil 6 home">
+        <img src="assets/shield.png" width="36" height="36" alt="">
+        <span>No Spoil <b>6</b></span>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="#demo">Demo</a>
+        <a href="#features">How it works</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a class="button button-small button-outline" href="#download">Downloads <span class="arrow" aria-hidden="true">↗</span></a>
+    </header>
+
+    <main id="main">
+      <section class="hero wrap" aria-labelledby="headline">
+        <div class="hero-copy">
+          <h1 id="headline">Keep GTA 6<br><em>a surprise.</em></h1>
+          <p>Blur GTA 6 posts, videos, and comments as you browse. Reveal any post with a click.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#download">Get the extension <span class="arrow" aria-hidden="true">↓</span></a>
+            <a class="text-link" href="#demo">Try the demo <span class="arrow" aria-hidden="true">→</span></a>
+          </div>
+        </div>
+
+        <section class="feed" id="demo" aria-labelledby="demo-title">
+          <div class="feed-titlebar">
+            <h2 id="demo-title"><span class="demo-window" aria-hidden="true"></span> Interactive demo</h2>
+            <button class="shield-switch" type="button" aria-pressed="true" id="shield-switch"><i aria-hidden="true"></i><span>Shield on</span></button>
+          </div>
+
+          <div class="feed-toolbar">
+            <div class="platform-tabs" role="group" aria-label="Choose a demo feed">
+              <button type="button" data-platform="x" aria-pressed="true"><img src="assets/x.png" width="15" height="15" alt=""> X</button>
+              <button type="button" data-platform="youtube" aria-pressed="false"><img src="assets/youtube.png" width="15" height="15" alt=""> YouTube</button>
+              <button type="button" data-platform="instagram" aria-pressed="false"><img src="assets/instagram.png" width="15" height="15" alt=""> Instagram</button>
+              <button type="button" data-platform="reddit" aria-pressed="false"><img src="assets/reddit.png" width="15" height="15" alt=""> Reddit</button>
+            </div>
+          </div>
+
+          <div class="feed-posts">
+            <article class="feed-post ordinary">
+              <div class="avatar" id="ordinary-avatar" aria-hidden="true">CC</div>
+              <div>
+                <div class="byline"><strong id="ordinary-author">Coastline Coffee</strong><span id="ordinary-handle">@coastlinecoffee</span></div>
+                <p id="ordinary-copy">First iced coffee of the day. The second is already on the way.</p>
+              </div>
+            </article>
+
+            <article class="feed-post spoiler is-covered" id="spoiler-post" aria-label="Sample post">
+              <div class="spoiler-body" id="spoiler-body" inert aria-hidden="true">
+                <div class="spoiler-content">
+                  <div class="avatar spoiler-avatar" id="spoiler-avatar" aria-hidden="true">NF</div>
+                  <div>
+                    <div class="byline"><strong id="spoiler-author">Night Drive Files</strong><span id="spoiler-handle">@nightdrivefiles</span></div>
+                    <p id="spoiler-copy">GTA 6 trailer discussion. Here’s what caught my eye.</p>
+                  </div>
+                </div>
+                <div class="post-image" aria-hidden="true"></div>
+              </div>
+              <div class="spoiler-overlay">
+                <div class="reveal-control">
+                  <span class="covered-label" id="covered-label">GTA 6 post covered</span>
+                  <button type="button" id="reveal-post" class="reveal-button" aria-expanded="false" aria-controls="spoiler-body"><i class="eye" aria-hidden="true"></i><span>Reveal post</span></button>
+                </div>
+              </div>
+            </article>
+          </div>
+          <div class="feed-caption"><span aria-hidden="true">↳</span> Sample posts contain no story spoilers.</div>
+          <p class="visually-hidden" id="demo-status" role="status"></p>
+          <noscript><p class="no-script">Enable JavaScript to interact with the preview.</p></noscript>
+        </section>
+      </section>
+
+      <div class="platform-band">
+        <div class="wrap platform-inner">
+          <p>Works across your feeds</p>
+          <ul aria-label="Supported social platforms">
+            <li><img src="assets/x.png" width="18" height="18" alt="">X</li>
+            <li><img src="assets/youtube.png" width="20" height="20" alt="">YouTube</li>
+            <li><img src="assets/instagram.png" width="18" height="18" alt="">Instagram</li>
+            <li><img src="assets/reddit.png" width="19" height="19" alt="">Reddit</li>
+            <li><img src="assets/tiktok.png" width="17" height="17" alt="">TikTok</li>
+            <li><span aria-hidden="true" class="more-sign">+</span> more web feeds</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="content-background">
+        <section class="wrap features section" id="features" aria-labelledby="features-title">
+          <div class="feature-art">
+            <img src="assets/extension-popup.webp" alt="No Spoil 6 toolbar popup showing the shield on and the Always on, Schedule, and Paused controls." width="375" height="433" loading="lazy">
+          </div>
+          <div class="feature-copy">
+            <h2 id="features-title">Your feed.<br> Your rules.</h2>
+            <ul>
+              <li>
+                <span class="feature-icon blur-icon" aria-hidden="true"><i></i></span>
+                <div><h3>Choose what gets covered</h3><p>Hide all GTA 6 talk, stick to story spoilers and leaks, or use custom phrases and site switches.</p></div>
+              </li>
+              <li>
+                <span class="feature-icon" aria-hidden="true"><i class="clock-icon"></i></span>
+                <div><h3>Set your hours</h3><p>Schedule the spoiler filter, block a whole site or one section, and lock your settings until a date you choose.</p></div>
+              </li>
+              <li>
+                <span class="feature-icon" aria-hidden="true"><i class="eye"></i></span>
+                <div><h3>Take a timed look</h3><p>Use the eye to reveal one post. The timer covers it again, and matching browser tab titles stay hidden.</p></div>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="wrap downloads section" id="download" aria-labelledby="download-title">
+          <div class="downloads-surface">
+            <div class="section-intro">
+              <h2 id="download-title">Get the extension.</h2>
+              <p>Download the ZIP for your browser and follow the manual installation steps.</p>
+            </div>
+
+            <div class="browser-list">
+              <article class="browser-card">
+                <img class="browser-logo" src="assets/chrome.png" alt="" width="38" height="38">
+                <h3>Chrome</h3>
+                <p>Also for Edge, Brave, Opera, and Vivaldi.</p>
+                <a class="button button-primary download-button" href="downloads/no-spoil-6-chromium.zip" download aria-label="Download ZIP for Chrome">Download ZIP <span class="arrow" aria-hidden="true">↓</span></a>
+                <details>
+                  <summary>Installation steps</summary>
+                  <ol>
+                    <li>Extract the downloaded ZIP.</li>
+                    <li>In Chrome, open <code>chrome://extensions</code>. In other browsers, open the extensions manager.</li>
+                    <li>Turn on <b>Developer mode</b>, select <b>Load unpacked</b>, and choose the extracted folder.</li>
+                  </ol>
+                </details>
+              </article>
+
+              <article class="browser-card">
+                <img class="browser-logo" src="assets/firefox.png" alt="" width="38" height="38">
+                <h3>Firefox</h3>
+                <p>For Firefox Desktop 140 or later.</p>
+                <a class="button button-outline download-button" href="downloads/no-spoil-6-firefox.zip" download aria-label="Download ZIP for Firefox">Download ZIP <span class="arrow" aria-hidden="true">↓</span></a>
+                <details>
+                  <summary>Installation steps</summary>
+                  <ol>
+                    <li>Extract the downloaded ZIP.</li>
+                    <li>Open <code>about:debugging</code> and select <b>This Firefox</b>.</li>
+                    <li>Choose <b>Load Temporary Add-on</b> and select <code>manifest.json</code>. Firefox removes temporary add-ons when it restarts.</li>
+                  </ol>
+                </details>
+              </article>
+
+              <article class="browser-card">
+                <img class="browser-logo" src="assets/safari.png" alt="" width="38" height="38">
+                <h3>Safari</h3>
+                <p>Extension bundle for Safari on Mac.</p>
+                <a class="button button-outline download-button" href="downloads/no-spoil-6-safari.zip" download aria-label="Download ZIP for Safari">Download ZIP <span class="arrow" aria-hidden="true">↓</span></a>
+                <details>
+                  <summary>Installation steps</summary>
+                  <ol>
+                    <li>Extract the ZIP. In <b>Safari → Settings → Advanced</b>, enable <b>Show features for web developers</b>.</li>
+                    <li>If the <b>Developer</b> tab offers <b>Add Temporary Extension</b>, select the extracted folder and grant website access.</li>
+                    <li>On earlier versions of Safari, use <a href="https://developer.apple.com/documentation/safariservices/packaging-a-web-extension-for-safari">Apple’s Safari Web Extension Packager</a>.</li>
+                  </ol>
+                </details>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="wrap faq section" id="faq" aria-labelledby="faq-title">
+          <h2 id="faq-title">Questions?</h2>
+          <div class="faq-items">
+            <details>
+              <summary>What does the shield look for?</summary>
+              <p>It looks for GTA 6 references in post text, titles, image descriptions, and links. That includes news and trailers. Spoilers in images, video, or audio can slip through when there’s no matching text or metadata.</p>
+            </details>
+            <details>
+              <summary>Can I leave it on all the time?</summary>
+              <p>Yes. <b>Always on</b> is the default. Choose <b>Schedule</b> in the toolbar popup to use a start date, daily browsing hours, or both. Times follow your device’s local clock.</p>
+            </details>
+            <details>
+              <summary>Does it work in social media apps?</summary>
+              <p>The shield works on websites you open in a supported browser. It can cover posts on instagram.com, for example, while the Instagram app is outside its reach.</p>
+            </details>
+            <details>
+              <summary>What happens to the pages I browse?</summary>
+              <p>Page content and activity counts stay on your device. Settings can move to another browser in a file or through optional browser sync. Read the <a href="privacy/">privacy policy</a> for details.</p>
+            </details>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <a class="brand" href="#top" aria-label="No Spoil 6 home"><img src="assets/shield.png" width="30" height="30" alt=""><span>No Spoil <b>6</b></span></a>
+      <nav aria-label="Footer navigation"><a href="#download">Downloads</a><a href="support/">Support</a><a href="privacy/">Privacy policy</a></nav>
+    </div>
+  </footer>
+</body>
+</html>

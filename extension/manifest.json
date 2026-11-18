@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "No Spoil 6",
+  "version": "1.1.1",
+  "description": "Hide GTA 6 spoilers with story filters, custom phrases, scheduled blocks, and timed reveals.",
+  "permissions": ["storage"],
+  "icons": {
+    "16": "icons/shield-16.png",
+    "32": "icons/shield-32.png",
+    "48": "icons/shield-48.png",
+    "128": "icons/store-128.png"
+  },
+  "action": {
+    "default_title": "No Spoil 6",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/shield-16.png",
+      "32": "icons/shield-32.png"
+    }
+  },
+  "background": { "service_worker": "background/worker.js" },
+  "options_ui": { "page": "options/options.html", "open_in_tab": true },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "all_frames": true,
+      "run_at": "document_start",
+      "js": ["shared/settings.js", "content/rules.js", "content/protection.js", "content/shield.js"]
+    }
+  ]
+}

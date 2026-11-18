@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shield settings · No Spoil 6</title>
+  <link rel="icon" href="../icons/shield-32.png" type="image/png">
+  <link rel="stylesheet" href="options.css">
+  <script src="../shared/settings.js" defer></script>
+  <script src="options.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="wrap brand"><img src="../icons/shield-128.png" width="39" height="39" alt=""><span>No Spoil <b>6</b></span></div>
+  </header>
+  <main class="wrap">
+    <div class="intro">
+      <h1>Shield settings</h1>
+      <p>Choose what gets covered, where to cover it, and when you can take a look.</p>
+      <a href="#lock" class="lock-note" id="locked-note" hidden></a>
+    </div>
+
+    <div class="layout">
+      <nav class="navigation" aria-label="Settings">
+        <a href="#filters">Filters</a><a href="#site-blocks">Site blocks</a><a href="#activity">Activity</a><a href="#lock">Shield lock</a><a href="#backup">Backup &amp; sync</a>
+      </nav>
+      <div class="panels">
+        <section class="panel" id="filters" aria-labelledby="filters-title">
+          <h2 id="filters-title">Filters</h2>
+          <form id="filter-form">
+            <fieldset data-preferences disabled>
+              <div class="grid">
+                <div class="field">
+                  <label for="scope">GTA 6 filter</label>
+                  <select id="scope" name="scope">
+                    <option value="everything">Everything about GTA 6</option>
+                    <option value="story">Story and leaks</option>
+                    <option value="custom">Custom phrases only</option>
+                  </select>
+                  <p class="hint">Story and leaks keeps ordinary news and trailers visible.</p>
+                </div>
+                <div class="field">
+                  <label for="peek">Re-cover a revealed post after</label>
+                  <select id="peek" name="peek">
+                    <option value="15">15 seconds</option>
+                    <option value="30">30 seconds</option>
+                    <option value="60">60 seconds</option>
+                    <option value="0">I cover it again</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="phrases">Block phrases</label>
+                  <textarea id="phrases" name="phrases" rows="3" placeholder="One word or phrase per line"></textarea>
+                  <p class="hint">These apply in every filter mode.</p>
+                </div>
+                <div class="field">
+                  <label for="allowed">Allow phrases</label>
+                  <textarea id="allowed" name="allowWords" rows="3" placeholder="One word or phrase per line"></textarea>
+                  <p class="hint">Posts containing these phrases stay visible.</p>
+                </div>
+                <div class="field">
+                  <label for="context">Context-only phrases</label>
+                  <textarea id="context" name="contextWords" rows="3" placeholder="ending, for example"></textarea>
+                  <p class="hint">These match when the same post mentions GTA 6 or a topic cue.</p>
+                </div>
+                <div class="field">
+                  <label for="topics">Extra topic cues</label>
+                  <textarea id="topics" name="topicWords" rows="3" placeholder="A game, series, or character name"></textarea>
+                  <p class="hint">One cue per line. A cue alone leaves the post visible.</p>
+                </div>
+              </div>
+              <fieldset class="subsection">
+                <legend>Filter posts on</legend>
+                <div class="site-switches" id="site-switches"></div>
+              </fieldset>
+              <div class="preferences">
+                <label class="check"><input type="checkbox" name="maskTitle"> Cover matching tab titles</label>
+                <label class="check"><input type="checkbox" name="historyEnabled"> Keep local activity counts</label>
+              </div>
+              <button type="submit" class="primary">Save filters</button>
+            </fieldset>
+            <p class="message" id="filter-message" role="status" hidden></p>
+          </form>
+        </section>
+
+        <section class="panel" id="site-blocks" aria-labelledby="blocks-title">
+          <h2 id="blocks-title">Site blocks</h2>
+          <p class="description">Cover an entire website, a community, or one page. Blocks can run all day or during local hours.</p>
+          <ul id="block-list" class="block-list"></ul>
+          <form id="block-form">
+            <fieldset data-preferences disabled>
+              <div class="field">
+                <label for="block-target">Website or path</label>
+                <input id="block-target" name="target" placeholder="reddit.com/r/GTA6" maxlength="280" required>
+              </div>
+              <div class="grid block-times">
+                <div class="field"><label for="block-from">From</label><input type="time" id="block-from" name="from"></div>
+                <div class="field"><label for="block-to">Until</label><input type="time" id="block-to" name="to"></div>
+              </div>
+              <p class="hint">Leave both times blank for an all-day block. Pausing the shield also pauses site blocks.</p>
+              <button type="submit" class="primary">Add site block</button>
+            </fieldset>
+            <p class="message" id="block-message" role="status" hidden></p>
+          </form>
+        </section>
+
+        <section class="panel" id="activity" aria-labelledby="activity-title">
+          <h2 id="activity-title">Activity</h2>
+          <p class="description">Daily counts stay on this device. Activity contains no post text, titles, or URLs.</p>
+          <dl class="stats">
+            <div><dt>Posts covered today</dt><dd id="today-count">0</dd></div>
+            <div><dt>Pages blocked today</dt><dd id="today-blocks">0</dd></div>
+            <div><dt>Days without revealing</dt><dd id="streak">0</dd></div>
+          </dl>
+          <p class="hint" id="activity-hint">Protection activity appears here after a match.</p>
+          <div id="activity-table" class="table-scroll" tabindex="0" role="region" aria-label="Recent protection activity" hidden>
+            <table>
+              <caption>Last 30 days</caption>
+              <thead><tr><th scope="col">Day</th><th scope="col">Platform</th><th scope="col">Matches</th><th scope="col">Reveals</th></tr></thead>
+              <tbody id="activity-rows"></tbody>
+            </table>
+          </div>
+          <button type="button" id="clear-activity" disabled>Clear activity</button>
+          <p class="message" id="activity-message" role="status" hidden></p>
+        </section>
+
+        <section class="panel" id="lock" aria-labelledby="lock-title">
+          <h2 id="lock-title">Shield lock</h2>
+          <p class="description">Lock editing and post reveals until a time you choose. The shield follows your existing schedule while locked.</p>
+          <form id="lock-form">
+            <fieldset id="lock-fields" disabled>
+              <div class="field">
+                <label for="lock-until">Keep locked until</label>
+                <input type="datetime-local" id="lock-until" required>
+              </div>
+              <p class="hint">An early unlock takes a 30-minute wait and a typed sentence.</p>
+              <button type="submit" class="primary">Lock shield</button>
+            </fieldset>
+          </form>
+          <div id="unlock-controls" hidden>
+            <p class="description" id="unlock-status"></p>
+            <button type="button" id="begin-unlock">Start early unlock</button>
+            <form id="unlock-form" hidden>
+              <div class="field">
+                <label for="unlock-sentence">Type <strong>I want to unlock my shield</strong></label>
+                <input id="unlock-sentence" autocomplete="off" required>
+              </div>
+              <button type="submit" class="primary">Unlock shield</button>
+            </form>
+          </div>
+          <p class="message" id="lock-message" role="status" hidden></p>
+        </section>
+
+        <section class="panel" id="backup" aria-labelledby="backup-title">
+          <h2 id="backup-title">Backup &amp; sync</h2>
+          <p class="description">Move filters, site blocks, and schedules to another browser with a settings file.</p>
+          <div class="actions">
+            <button type="button" id="export" disabled>Export settings</button>
+            <button type="button" id="import" disabled>Import settings</button>
+            <input type="file" id="import-file" accept=".json,application/json" hidden>
+          </div>
+          <label class="check sync-option"><input type="checkbox" id="sync" disabled> Sync settings through this browser</label>
+          <p class="hint">Opt in to store preferences in your browser’s sync service. If this browser already has a synced copy, enabling sync loads that copy. Activity and locks stay on this device.</p>
+          <p class="message" id="backup-message" role="status" hidden></p>
+        </section>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
