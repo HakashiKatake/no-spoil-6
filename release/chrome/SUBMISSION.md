@@ -3,7 +3,7 @@
 ## First submission
 
 1. Sign in to the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) using the Google account you registered. Enable 2-Step Verification and complete the contact and verification fields shown on the **Account** page. Set the trader declaration accurately if the dashboard asks for it.
-2. Upload `dist/no-spoil-6-chromium.zip` (v1.1.1). If you already have the v1.1.0 draft open, use its **Package** tab to upload the new ZIP. For a first upload, go to **Items → Add new item**. The updated package includes the padded store icon.
+2. Upload the current `dist/no-spoil-6-chromium.zip`. If you already have a draft open, use its **Package** tab to upload the new ZIP. For a first upload, go to **Items → Add new item**. The updated package includes the padded store icon.
 3. Complete **Store listing** using the field-by-field instructions below.
 4. On **Privacy**, enter the single purpose and permission explanations below. Select the option for bundled code with no remote code. Disclose website content processing and the optional storage of preferences in the browser sync service. Complete the dashboard’s data-use certifications based on these behaviors. Host the `website/` directory on HTTPS and enter the resulting public `/privacy/` URL. Check that it opens without sign-in.
 5. On **Distribution**, select **Public** for a discoverable listing, choose the regions you want, and select the appropriate pricing option. The current build has no payment flow, so it can be submitted as free.
