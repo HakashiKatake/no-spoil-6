@@ -6,14 +6,20 @@
   const onYouTube = /(?:^|\.)(?:youtube\.com|youtube-nocookie\.com|youtu\.be)$/.test(location.hostname);
   const fallback = "a[href],p,h1,h2,h3,h4,h5,h6,[role=heading],figure";
   const candidates = primary + "," + fallback;
-  const separate = 'shreddit-post,shreddit-comment,.thing[data-fullname],[data-comment-id]';
+  const separate = 'shreddit-post,shreddit-comment,.thing[data-fullname],[data-comment-id]'
+    + (platform === "linkedin" ? ",.comments-comment-item,.comment" : "");
   const excluded = 'script,style,noscript,template,textarea,select,input,[contenteditable]:not([contenteditable=false]),[data-no-spoil-control]';
+  const transient = '[role="tooltip"],tp-yt-paper-tooltip,yt-tooltip-view-model';
+  const controls = 'button,[role="button"],[role="toolbar"],[role="menu"],[role="menuitem"],yt-button-shape,reel-action-bar-view-model';
+  const identityAttributes = ["video-id", "post-id", "data-post-id", "data-comment-id", "data-fullname", "thingid", "data-urn"];
   const evidenceAttributes = ["alt", "title", "aria-label", "post-title", "subreddit-name", "subreddit-prefixed-name", "data-title"];
-  const watchedAttributes = [...evidenceAttributes, "href", "video-id", "hidden", "data-post-id", "data-comment-id", "data-fullname", "post-id"];
+  const watchedAttributes = [...evidenceAttributes, ...identityAttributes, "href", "hidden"];
   const mediaSelector = "video,audio";
+  const shortsReel = "ytd-reel-video-renderer,ytm-reel-video-renderer";
   const layoutStyles = new CSSStyleSheet();
   layoutStyles.replaceSync(`
     [data-no-spoil-covered] { isolation: isolate !important; user-select: none !important; }
+    [data-no-spoil-covered] :is(img, video, canvas, iframe) { opacity: 0 !important; }
     [data-no-spoil-positioned] { position: relative !important; }
     [data-no-spoil-box] { display: block !important; }
     :root[data-no-spoil-page-blocked] body { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
@@ -127,73 +133,116 @@
     }
   }
 
-  function linkEvidence(link) {
+  function parseLink(link) {
     try {
       const url = new URL(link, location.href);
-      if (url.protocol === "https:" || url.protocol === "http:") {
-        return url.hostname + decode(url.pathname + url.search);
-      }
+      if (url.protocol === "https:" || url.protocol === "http:") return url;
     } catch {
       // Ignore incomplete or invalid URLs.
     }
-    return "";
+    return null;
+  }
+
+  function linkIdentity(url) {
+    if (url.hostname !== location.hostname) return "";
+    if (onYouTube) {
+      const id = url.pathname === "/watch"
+        ? url.searchParams.get("v")
+        : url.pathname.match(/^\/(?:shorts|embed|live)\/([^/]+)/)?.[1];
+      return id ? "video:" + id : "";
+    }
+    if (platform === "bluesky") return url.pathname.match(/^\/profile\/[^/]+\/post\/[^/]+/)?.[0] ?? "";
+    if (platform === "linkedin" && url.pathname.startsWith("/feed/update/")) {
+      return url.pathname.match(/^\/feed\/update\/urn:li:(?:activity|ugcPost):\d+/)?.[0] ?? "";
+    }
+    return url.pathname.match(/\/(?:status|comments|reel|p|posts?|videos?)\/[^/]+/)?.[0] ?? "";
   }
 
   function readEvidence(target) {
     const text = [];
     const links = [];
-    const identity = [];
-    const pending = [target];
+    const content = [];
+    const contentLabels = [];
+    let identity = "";
+    let permalink = "";
+    for (const attr of identityAttributes) {
+      const value = target.getAttribute(attr);
+      if (value) {
+        identity = (attr === "video-id" ? "video" : attr) + ":" + value;
+        break;
+      }
+    }
+    const pending = [{ node: target, control: false }];
 
     while (pending.length) {
-      const node = pending.pop();
+      const entry = pending.pop();
+      const { node } = entry;
+      let { control } = entry;
       if (node.nodeType === Node.TEXT_NODE) {
-        if (node.nodeValue.trim()) text.push(node.nodeValue);
+        if (node.nodeValue.trim()) {
+          text.push(node.nodeValue);
+          if (!control) content.push(node.nodeValue);
+        }
         continue;
       }
       if (node.nodeType === Node.ELEMENT_NODE) {
-        if (node.matches(excluded) || (node !== target && node.matches(separate))) continue;
+        if (node.matches(excluded) || node.matches(transient) || (node !== target && node.matches(separate))) continue;
+        control ||= node !== target && node.matches(controls);
         for (const attr of evidenceAttributes) {
           const value = node.getAttribute(attr);
-          if (value) text.push(value);
+          if (!value) continue;
+          text.push(value);
+          if (!control) contentLabels.push(value);
         }
         const href = node.getAttribute("href");
         if (href) {
-          const url = linkEvidence(href);
-          if (url) links.push(url);
-          const permalink = url.match(/\/(?:status|comments|reel|p|shorts|video)\/[^/?#]+|\/watch\?v=[^&#]+/);
-          if (permalink) identity.push(permalink[0]);
+          const url = parseLink(href);
+          if (url) {
+            links.push(url.hostname + decode(url.pathname + url.search));
+            if (!control && !permalink && !identity) permalink = linkIdentity(url);
+          }
         }
-        for (const attr of ["post-id", "video-id", "data-post-id", "data-comment-id", "data-fullname", "thingid"]) {
-          const value = node.getAttribute(attr);
-          if (value) identity.push(value);
-        }
-        if (node.shadowRoot) pending.push(node.shadowRoot);
+        if (node.shadowRoot) pending.push({ node: node.shadowRoot, control });
       }
-      for (let child = node.lastChild; child; child = child.previousSibling) pending.push(child);
+      for (let child = node.lastChild; child; child = child.previousSibling) {
+        pending.push({ node: child, control });
+      }
     }
-    const visible = text.join(" ").replace(/\s+/g, " ").trim();
     return {
-      searchable: visible + " " + links.join(" "),
-      signature: [visible, ...identity].join("\n")
+      searchable: text.join(" ") + " " + links.join(" "),
+      identity: identity || permalink,
+      content: (content.length ? content : contentLabels).join(" ").replace(/\s+/g, " ").trim()
     };
   }
 
-  function coveredAncestor(target) {
+  function ancestorShield(target, includeRevealed = false) {
     for (let current = parentOf(target); current; current = parentOf(current)) {
       const state = shields.get(current);
-      if (state && !state.revealed) return true;
+      if (state && (includeRevealed || !state.revealed)) return state;
     }
-    return false;
+    return null;
   }
 
   function suppressMedia(target) {
-    for (const media of target.querySelectorAll(mediaSelector)) media.pause();
+    for (const media of target.querySelectorAll(mediaSelector)) {
+      if (!media.paused) media.pause();
+    }
   }
 
   function pauseCoveredMedia(event) {
     const media = event.target;
-    if (media.matches?.(mediaSelector) && (blocked || (shields.size && coveredAncestor(media)))) media.pause();
+    if (!media.matches?.(mediaSelector)) return;
+    const shield = shields.size ? ancestorShield(media) : null;
+    if (blocked || shield) media.pause();
+  }
+
+  function resumeShort(state) {
+    if (!onYouTube || !location.pathname.startsWith("/shorts/") || !state.target.matches(shortsReel)) return;
+    // Revealing a Short is also the gesture that lets its player start again.
+    const activeReel = document.querySelector(":is(" + shortsReel + ")[is-active]") ?? document.querySelector(shortsReel);
+    if (state.target !== activeReel) return;
+    const media = state.target.querySelector("video");
+    if (media) media.play().catch(() => {});
   }
 
   function syncInert(state) {
@@ -268,7 +317,7 @@
     state.peekTimer = setTimeout(() => updateReveal(state), left % 1000 || 1000);
   }
 
-  function addShield(target, signature, kind) {
+  function addShield(target, evidence, kind) {
     const host = document.createElement("span");
     host.setAttribute("data-no-spoil-control", "");
     const shadow = host.attachShadow({ mode: "closed" });
@@ -285,7 +334,10 @@
     label.className = "label";
     button.append(eye, label);
 
-    const state = { target, signature, kind, host, shadow, cover, button, label, revealed: false, deadline: 0, inert: new Set() };
+    const state = {
+      target, identity: evidence.identity, content: evidence.content, kind, host, shadow, cover, button, label,
+      revealed: false, deadline: 0, inert: new Set()
+    };
     state.onClick = (event) => preventCoveredInteraction(state, event);
     state.onFocus = (event) => {
       if (!state.revealed && event.target === target) button.focus({ preventScroll: true });
@@ -305,6 +357,7 @@
         updateReveal(state);
       }
       scanSubtree(target);
+      if (state.revealed) resumeShort(state);
     });
     target.addEventListener("click", state.onClick, true);
     target.addEventListener("auxclick", state.onClick, true);
@@ -330,29 +383,31 @@
     restoreInert(state);
   }
 
-  function reconcile(target, signature, kind, count = true) {
+  function reconcile(target, evidence, kind, count = true) {
     const state = shields.get(target);
-    if (!signature || coveredAncestor(target)) {
+    if (!kind || ancestorShield(target, !target.matches(separate))) {
       removeShield(target);
       return;
     }
-    if (ready && settings.historyEnabled && count && counted.get(target) !== signature) {
-      counted.set(target, signature);
+    const itemKey = evidence.identity || evidence.content || location.pathname;
+    if (ready && settings.historyEnabled && count && counted.get(target) !== itemKey) {
+      counted.set(target, itemKey);
       protection.record(kind);
     }
     if (!state) {
-      addShield(target, signature, kind);
+      addShield(target, evidence, kind);
       return;
     }
-    if (state.kind !== kind) {
-      state.kind = kind;
-      coverAgain(state);
-    }
+    const samePost = state.identity && evidence.identity
+      ? state.identity === evidence.identity
+      : state.content === evidence.content;
+    const kindChanged = state.kind !== kind;
+    state.identity = evidence.identity;
+    state.content = evidence.content;
+    state.kind = kind;
     if (state.host.parentElement !== target) target.append(state.host);
-    if (state.signature !== signature) {
-      state.signature = signature;
-      if (state.revealed) coverAgain(state);
-    }
+    if (!samePost && state.revealed) coverAgain(state);
+    else if (kindChanged && !state.revealed) render(state);
     if (!state.revealed) syncInert(state);
   }
 
@@ -376,14 +431,14 @@
       removeShield(target);
       return;
     }
-    if (coveredAncestor(target)) {
+    if (ancestorShield(target, !target.matches(separate))) {
       removeShield(target);
       return;
     }
     const evidence = readEvidence(target);
     const kind = classify(evidence.searchable, topic && target.matches(primary));
     const wasCovered = shields.has(target) && !shields.get(target).revealed;
-    reconcile(target, kind ? evidence.signature || location.pathname : "", kind);
+    reconcile(target, evidence, kind);
     if (!kind && wasCovered) scanSubtree(target);
   }
 
@@ -424,11 +479,11 @@
 
     const evidence = readEvidence(title);
     const kind = classify(evidence.searchable);
-    const signature = kind ? videoId + "\n" + evidence.signature : "";
+    if (videoId) evidence.identity = "video:" + videoId;
     for (const target of [player, title]) {
       if (!target) continue;
       watchTargets.add(target);
-      reconcile(target, signature, kind, target === title);
+      reconcile(target, evidence, kind, target === title);
     }
     return watchTargets;
   }

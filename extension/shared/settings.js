@@ -8,7 +8,7 @@
   const scopes = ["everything", "story", "custom"];
   const platforms = {
     x: "X", youtube: "YouTube", instagram: "Instagram", reddit: "Reddit",
-    facebook: "Facebook", tiktok: "TikTok", bluesky: "Bluesky", threads: "Threads", other: "Other websites"
+    facebook: "Facebook", tiktok: "TikTok", bluesky: "Bluesky", linkedin: "LinkedIn", threads: "Threads", other: "Other websites"
   };
   const fields = [
     "mode", "startAt", "windows", "scope", "disabledSites", "phrases", "contextWords", "topicWords",

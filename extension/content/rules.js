@@ -71,7 +71,16 @@
     { id: "reddit", domains: ["reddit.com"], selector: 'shreddit-post,shreddit-comment,.thing[data-fullname],faceplate-tracker[data-testid="search-post"]' },
     { id: "facebook", domains: ["facebook.com"], selector: article + ',[data-pagelet^="FeedUnit"]:not(:has([role="article"]))' },
     { id: "tiktok", domains: ["tiktok.com"], selector: '[data-e2e="recommend-list-item-container"],[data-e2e="search-card-container"],[data-e2e="comment-item"],' + article },
-    { id: "bluesky", domains: ["bsky.app"], selector: '[data-testid^="feedItem-by-"],[data-testid="postThreadItem"],' + article },
+    { id: "bluesky", domains: ["bsky.app"], selector: [
+      '[data-testid^="feedItem-by-"]', '[data-testid^="postThreadItem-by-"]', '[data-testid="postThreadItem"]',
+      'a[href*="/profile/"][href*="/post/"]:has([data-testid="postText"])', article
+    ].join(",") },
+    { id: "linkedin", domains: ["linkedin.com"], selector: [
+      '.feed-shared-update-v2', '.occludable-update', '.main-feed-activity-card',
+      '[data-view-name="feed-full-update"]', '[data-testid="main-feed-activity-card"]',
+      '[data-urn^="urn:li:activity:"]', '[data-urn^="urn:li:ugcPost:"]',
+      '[role="feed"] > [role="listitem"]', '.comments-comment-item', '.comment', article
+    ].join(",") },
     { id: "threads", domains: ["threads.com", "threads.net"], selector: '[data-pressable-container],' + article }
   ];
 

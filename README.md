@@ -26,7 +26,7 @@ Store publishing uses the relevant Chromium store and [Firefox Add-ons](https://
 
 ## Coverage
 
-The shield checks post text, accessible image descriptions, titles and links. It has dedicated rules for X, YouTube, Instagram, Reddit, Facebook, TikTok, Bluesky and Threads, with shared rules for Mastodon and other websites. The generic filter works best on websites with identifiable posts, headlines or captions. A photo, video or audio clip with no matching text or metadata can slip through. Native social apps and browser-protected pages are outside its reach.
+The shield checks post text, accessible image descriptions, titles and links. It has dedicated rules for X, YouTube, Instagram, Reddit, Facebook, TikTok, Bluesky, LinkedIn and Threads, with shared rules for Mastodon and other websites. The generic filter works best on websites with identifiable posts, headlines or captions. A photo, video or audio clip with no matching text or metadata can slip through. Native social apps and browser-protected pages are outside its reach.
 
 ## Website
 
